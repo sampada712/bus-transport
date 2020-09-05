@@ -1,9 +1,15 @@
 package com.honeywell.hackathon.bustransport.service;
 
-import com.honeywell.hackathon.bustransport.model.BusResource;
+import com.honeywell.hackathon.bustransport.entity.Bus;
+import com.honeywell.hackathon.bustransport.entity.Capacity;
+import com.honeywell.hackathon.bustransport.entity.Fuel;
 import com.honeywell.hackathon.bustransport.exception.ErrorMessage;
 import com.honeywell.hackathon.bustransport.exception.ErrorType;
 import com.honeywell.hackathon.bustransport.exception.ResourceNotFoundException;
+import com.honeywell.hackathon.bustransport.model.BusResource;
+import com.honeywell.hackathon.bustransport.repository.BusRepository;
+import com.honeywell.hackathon.bustransport.repository.CapacityRepository;
+import com.honeywell.hackathon.bustransport.repository.FuelRepository;
 import com.honeywell.hackathon.bustransport.util.TransportUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,16 +21,26 @@ public class BusServiceImpl implements BusService {
     Logger LOGGER = LoggerFactory.getLogger(BusServiceImpl.class);
 
     @Autowired
-    TransportUtil productHelper;
+    TransportUtil util;
+
+    @Autowired
+    BusRepository busRepository;
+
+    @Autowired
+    FuelRepository fuelRepository;
+
+    @Autowired
+    CapacityRepository capacityRepository;
 
     @Override
     public BusResource getBusDetails(Integer busId) throws ResourceNotFoundException {
         LOGGER.info("getBusDetails for busId={}", busId);
-        //TODO DB integration
-        BusResource busResource = new BusResource();
-        if (busResource == null) {
+        Bus bus = busRepository.findByBusId(busId);
+        if (bus == null) {
             throw new ResourceNotFoundException(null, new ErrorMessage(ErrorType.RESOURCE_NOT_FOUND, String.valueOf(busId)));
         }
-        return busResource;
+        Capacity capacity = capacityRepository.findByBusId(busId);
+        Fuel fuel = fuelRepository.findByBusId(busId);
+        return util.buildBusResource(bus, capacity, fuel);
     }
 }
